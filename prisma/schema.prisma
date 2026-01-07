@@ -1,0 +1,537 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  phone         String?
+  phoneVerified DateTime?
+  image         String?
+  role          UserRole  @default(STUDENT)
+  plan          Plan      @default(FREE)
+  credits       Int       @default(10)
+  storageUsed   BigInt    @default(0)
+  language      String    @default("en")
+  timezone      String    @default("UTC")
+  preferences   Json?     // UserPreferences
+  instituteId   String?   // For institute users
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  payments      Payment[]
+  courses       Course[]
+  analytics     UserAnalytics[]
+  subscriptions  Subscription[]
+  
+  @@map("users")
+}
+
+model Institute {
+  id          String   @id @default(cuid())
+  name        String
+  domain      String?  @unique
+  logo        String?
+  address     String?
+  phone       String?
+  email       String
+  settings    Json?    // InstituteSettings
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  courses     Course[]
+  
+  @@map("institutes")
+}
+
+model Course {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  instructorId String
+  instituteId String?
+  isPublic    Boolean     @default(false)
+  thumbnail   String?
+  price       Float?      @default(0)
+  currency    String      @default("USD")
+  tags        String[]
+  category    String?
+  level       CourseLevel @default(BEGINNER)
+  language    String      @default("en")
+  status      CourseStatus @default(DRAFT)
+  settings    Json?       // CourseSettings
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  instructor   User         @relation(fields: [instructorId], references: [id])
+  institute    Institute?   @relation(fields: [instituteId], references: [id])
+  projects     Project[]
+  enrollments  Enrollment[]
+  
+  @@map("courses")
+}
+
+model Enrollment {
+  id          String   @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime @default(now())
+  progress    Float    @default(0)
+  completedAt DateTime?
+
+  user    User    @relation(fields: [userId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+model Project {
+  id              String          @id @default(cuid())
+  userId          String
+  courseId        String?         // If part of a course
+  title           String
+  description     String?
+  originalFileUrl String?         // Original uploaded file
+  originalFileName String?
+  fileType        FileType        @default(PPTX)
+  fileSize        BigInt?
+  language        String          @default("en")
+  status          ProjectStatus   @default(DRAFT)
+  settings        Json            // ProjectSettings
+  branding        Json?           // BrandingSettings
+  watermark       Boolean         @default(true)
+  accessType      AccessType      @default(PRIVATE)
+  shareToken      String?         @unique // For public sharing
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course?   @relation(fields: [courseId], references: [id])
+  slides   Slide[]
+  videos   Video[]
+  jobs     Job[]
+  analytics ProjectAnalytics[]
+
+  @@map("projects")
+}
+
+model Slide {
+  id            String     @id @default(cuid())
+  projectId     String
+  order         Int
+  title         String
+  content       String
+  speakerNotes  String?
+  imageUrl      String?
+  audioUrl      String?
+  duration      Int        @default(5) // seconds
+  transition    String?    // Transition type
+  background    String?    // Background color/image
+  layout        SlideLayout @default(TITLE)
+  language      String     @default("en")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  scripts Script[]
+  subtitles Subtitle[]
+
+  @@unique([projectId, order])
+  @@map("slides")
+}
+
+model Script {
+  id              String         @id @default(cuid())
+  slideId         String
+  content         String
+  originalContent String?        // Original slide content
+  tone            ScriptTone     @default(TEACHER)
+  level           ContentLevel   @default(BEGINNER)
+  voiceSettings   Json           // VoiceSettings
+  generatedAt     DateTime       @default(now())
+  isCustom        Boolean        @default(false)
+  language        String         @default("en")
+
+  slide Slide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+
+  @@map("scripts")
+}
+
+model Video {
+  id              String           @id @default(cuid())
+  projectId       String
+  title           String?
+  url             String
+  thumbnailUrl    String?
+  duration        Int              // seconds
+  resolution      VideoResolution  @default(FULL_HD_1080)
+  format          VideoFormat      @default(MP4)
+  aspectRatio     AspectRatio      @default(SIXTEEN_NINE)
+  quality         VideoQuality     @default(MEDIUM)
+  status          VideoStatus      @default(PENDING)
+  metadata        Json?            // VideoMetadata
+  subtitlesUrl    String?
+  watermark       Boolean          @default(true)
+  downloadCount   Int              @default(0)
+  viewCount       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("videos")
+}
+
+model Subtitle {
+  id          String   @id @default(cuid())
+  slideId     String
+  language    String   @default("en")
+  content     String
+  startTime   Float    // seconds
+  endTime     Float    // seconds
+  format      SubtitleFormat @default(SRT)
+  isBurnedIn  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  slide Slide @relation(fields: [slideId], references: [id], onDelete: Cascade)
+
+  @@map("subtitles")
+}
+
+model Job {
+  id          String    @id @default(cuid())
+  projectId   String
+  type        JobType
+  status      JobStatus @default(PENDING)
+  progress    Int       @default(0)
+  result      Json?     // JobResult
+  error       String?
+  priority    Int       @default(5) // 1-10 priority
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("jobs")
+}
+
+model Payment {
+  id                   String         @id @default(cuid())
+  userId               String
+  subscriptionId       String?
+  amount               Float
+  currency             String         @default("USD")
+  status               PaymentStatus  @default(PENDING)
+  method               PaymentMethod  @default(STRIPE)
+  stripePaymentIntentId String?
+  invoiceId            String?
+  credits              Int
+  description          String?
+  metadata             Json?          // PaymentMetadata
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@map("payments")
+}
+
+model Subscription {
+  id          String           @id @default(cuid())
+  userId      String
+  plan        Plan
+  status      SubscriptionStatus @default(ACTIVE)
+  startDate   DateTime         @default(now())
+  endDate     DateTime
+  credits     Int              @default(0)
+  recurring   Boolean          @default(true)
+  stripeSubId String?          @unique
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id])
+  payments Payment[]
+
+  @@map("subscriptions")
+}
+
+model UserAnalytics {
+  id            String   @id @default(cuid())
+  userId        String
+  date          DateTime @default(now())
+  videosCreated Int      @default(0)
+  creditsUsed   Int      @default(0)
+  storageUsed   BigInt   @default(0)
+  renderTime    Int      @default(0) // minutes
+  language      String?  // Primary language used
+  metadata      Json?    // Additional analytics data
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("user_analytics")
+}
+
+model ProjectAnalytics {
+  id           String   @id @default(cuid())
+  projectId    String
+  date         DateTime @default(now())
+  views        Int      @default(0)
+  downloads    Int      @default(0)
+  shares       Int      @default(0)
+  renderTime   Int      @default(0) // seconds
+  successRate  Float    @default(0)
+  metadata     Json?    // Additional analytics data
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, date])
+  @@map("project_analytics")
+}
+
+model SystemConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_config")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  key       String   @unique
+  scopes    String[]
+  lastUsed  DateTime?
+  expiresAt DateTime?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("api_keys")
+}
+
+model FeatureFlag {
+  id        String  @id @default(cuid())
+  key       String  @unique
+  enabled   Boolean @default(false)
+  rollout   Float?  @default(0) // 0-1 rollout percentage
+  metadata  Json?
+  updatedAt DateTime @updatedAt
+
+  @@map("feature_flags")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  TEACHER
+  INSTITUTE_ADMIN
+  ADMIN
+}
+
+enum Plan {
+  FREE
+  STARTER    // ₹99
+  CREATOR    // ₹299
+  INSTITUTE
+  ENTERPRISE
+}
+
+enum FileType {
+  PPT
+  PPTX
+  PDF
+  DOCX
+  TXT
+  GOOGLE_SLIDES
+}
+
+enum ProjectStatus {
+  DRAFT
+  PROCESSING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum AccessType {
+  PRIVATE
+  PUBLIC
+  UNLISTED
+}
+
+enum SlideLayout {
+  TITLE
+  CONTENT
+  TWO_COLUMN
+  IMAGE_LEFT
+  IMAGE_RIGHT
+  SECTION_HEADER
+}
+
+enum ScriptTone {
+  TEACHER
+  CONVERSATIONAL
+  CORPORATE
+  EXAM_ORIENTED
+  CASUAL
+}
+
+enum ContentLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  ALL_LEVELS
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DELETED
+}
+
+enum VideoStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum JobType {
+  PPT_PARSE
+  PDF_PARSE
+  DOCX_PARSE
+  SCRIPT_GENERATE
+  SCRIPT_TRANSLATE
+  TTS_GENERATE
+  VIDEO_RENDER
+  SUBTITLE_GENERATE
+  THUMBNAIL_GENERATE
+  ANALYTICS_UPDATE
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  STRIPE
+  RAZORPAY
+  PAYPAL
+  BANK_TRANSFER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  SUSPENDED
+}
+
+enum VideoResolution {
+  HD_720
+  FULL_HD_1080
+  UHD_4K
+}
+
+enum VideoFormat {
+  MP4
+  WEBM
+  MOV
+  AVI
+}
+
+enum AspectRatio {
+  SIXTEEN_NINE    // 16:9
+  NINE_SIXTEEN    // 9:16
+  ONE_ONE        // 1:1
+  FOUR_THREE     // 4:3
+}
+
+enum VideoQuality {
+  LOW
+  MEDIUM
+  HIGH
+  PREMIUM
+}
+
+enum SubtitleFormat {
+  SRT
+  VTT
+  ASS
+}

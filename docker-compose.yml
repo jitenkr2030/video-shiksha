@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Web Application
+  web:
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./dev.db
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - ./prisma:/app/prisma
+    depends_on:
+      - redis
+    networks:
+      - videoshiksha-network
+
+  # Worker Service
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./dev.db
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+    volumes:
+      - ./apps/worker:/app
+      - /app/node_modules
+      - ./uploads:/app/uploads
+    depends_on:
+      - redis
+    networks:
+      - videoshiksha-network
+    deploy:
+      replicas: 2
+
+  # Redis for Job Queue
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - videoshiksha-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./infra/nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+      - worker
+    networks:
+      - videoshiksha-network
+
+volumes:
+  redis_data:
+
+networks:
+  videoshiksha-network:
+    driver: bridge

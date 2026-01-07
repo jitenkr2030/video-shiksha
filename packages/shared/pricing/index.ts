@@ -1,0 +1,259 @@
+import { SubscriptionPlan, JobType } from '../types';
+import { SUBSCRIPTION_PLANS, CREDIT_COSTS } from '../constants';
+
+export interface CreditPackage {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  currency: string;
+  bonus?: number;
+  popular?: boolean;
+}
+
+export interface UsageCalculation {
+  totalCredits: number;
+  breakdown: Record<JobType, number>;
+  estimatedTime: number; // in minutes
+}
+
+export const CREDIT_PACKAGES: CreditPackage[] = [
+  {
+    id: 'starter',
+    name: 'Starter Pack',
+    credits: 50,
+    price: 4.99,
+    currency: 'USD'
+  },
+  {
+    id: 'standard',
+    name: 'Standard Pack',
+    credits: 150,
+    price: 12.99,
+    currency: 'USD',
+    bonus: 25,
+    popular: true
+  },
+  {
+    id: 'professional',
+    name: 'Professional Pack',
+    credits: 500,
+    price: 39.99,
+    currency: 'USD',
+    bonus: 100
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise Pack',
+    credits: 2000,
+    price: 149.99,
+    currency: 'USD',
+    bonus: 500
+  }
+];
+
+export class PricingCalculator {
+  /**
+   * Calculate credits required for a complete video project
+   */
+  static calculateProjectCredits(
+    slideCount: number,
+    hasCustomScript: boolean = false,
+    hasSubtitles: boolean = true
+  ): UsageCalculation {
+    const breakdown: Record<JobType, number> = {
+      [JobType.PPT_PARSE]: CREDIT_COSTS[JobType.PPT_PARSE],
+      [JobType.SCRIPT_GENERATE]: hasCustomScript ? 0 : slideCount * CREDIT_COSTS[JobType.SCRIPT_GENERATE],
+      [JobType.TTS_GENERATE]: slideCount * CREDIT_COSTS[JobType.TTS_GENERATE],
+      [JobType.VIDEO_RENDER]: CREDIT_COSTS[JobType.VIDEO_RENDER],
+      [JobType.SUBTITLE_GENERATE]: hasSubtitles ? CREDIT_COSTS[JobType.SUBTITLE_GENERATE] : 0
+    };
+
+    const totalCredits = Object.values(breakdown).reduce((sum, credits) => sum + credits, 0);
+    
+    // Estimate processing time (rough calculation)
+    const estimatedTime = Math.max(
+      1, // minimum 1 minute
+      Math.round(
+        (slideCount * 2) + // 2 minutes per slide for processing
+        (hasCustomScript ? 0 : slideCount * 0.5) + // script generation time
+        5 // base video rendering time
+      )
+    );
+
+    return {
+      totalCredits,
+      breakdown,
+      estimatedTime
+    };
+  }
+
+  /**
+   * Get monthly credits for a subscription plan
+   */
+  static getPlanCredits(plan: SubscriptionPlan): number {
+    return SUBSCRIPTION_PLAN[plan].credits;
+  }
+
+  /**
+   * Calculate price per credit for packages
+   */
+  static getPricePerCredit(packageId: string): number {
+    const pkg = CREDIT_PACKAGES.find(p => p.id === packageId);
+    if (!pkg) return 0;
+    
+    const effectiveCredits = pkg.credits + (pkg.bonus || 0);
+    return pkg.price / effectiveCredits;
+  }
+
+  /**
+   * Get best value package
+   */
+  static getBestValuePackage(): CreditPackage {
+    return CREDIT_PACKAGES.reduce((best, current) => {
+      const bestPricePerCredit = this.getPricePerCredit(best.id);
+      const currentPricePerCredit = this.getPricePerCredit(current.id);
+      return currentPricePerCredit < bestPricePerCredit ? current : best;
+    });
+  }
+
+  /**
+   * Check if user has enough credits for an operation
+   */
+  static canAffordOperation(
+    userCredits: number,
+    jobType: JobType,
+    quantity: number = 1
+  ): boolean {
+    const requiredCredits = CREDIT_COSTS[jobType] * quantity;
+    return userCredits >= requiredCredits;
+  }
+
+  /**
+   * Calculate remaining credits after operation
+   */
+  static calculateRemainingCredits(
+    userCredits: number,
+    jobType: JobType,
+    quantity: number = 1
+  ): number {
+    const requiredCredits = CREDIT_COSTS[jobType] * quantity;
+    return Math.max(0, userCredits - requiredCredits);
+  }
+
+  /**
+   * Get upgrade recommendation based on usage
+   */
+  static getUpgradeRecommendation(
+    currentPlan: SubscriptionPlan,
+    monthlyUsage: number
+  ): {
+    recommendedPlan: SubscriptionPlan;
+    reason: string;
+    savings?: number;
+  } | null {
+    const currentPlanData = SUBSCRIPTION_PLAN[currentPlan];
+    
+    if (monthlyUsage <= currentPlanData.credits * 0.8) {
+      return null; // No upgrade needed
+    }
+
+    // Find next plan that can handle usage
+    const plans = Object.values(SubscriptionPlan);
+    const currentIndex = plans.indexOf(currentPlan);
+    
+    for (let i = currentIndex + 1; i < plans.length; i++) {
+      const plan = plans[i];
+      const planData = SUBSCRIPTION_PLAN[plan];
+      
+      if (planData.credits >= monthlyUsage) {
+        const currentCost = currentPlanData.price;
+        const newCost = planData.price;
+        const payAsYouGoCost = (monthlyUsage - currentPlanData.credits) * 0.15; // $0.15 per extra credit
+        const currentTotalCost = currentCost + payAsYouGoCost;
+        const savings = Math.max(0, currentTotalCost - newCost);
+        
+        return {
+          recommendedPlan: plan,
+          reason: `Your monthly usage (${monthlyUsage} credits) exceeds your current plan's limit. Upgrade to save $${savings.toFixed(2)} per month.`,
+          savings: savings > 0 ? savings : undefined
+        };
+      }
+    }
+
+    return {
+      recommendedPlan: SubscriptionPlan.ENTERPRISE,
+      reason: 'Your usage exceeds all standard plans. Contact us for enterprise pricing.'
+    };
+  }
+
+  /**
+   * Calculate ROI for subscription vs pay-as-you-go
+   */
+  static calculateSubscriptionROI(
+    plan: SubscriptionPlan,
+    expectedMonthlyUsage: number
+  ): {
+    subscriptionCost: number;
+    payAsYouGoCost: number;
+    savings: number;
+    roi: number; // percentage
+  } {
+    const planData = SUBSCRIPTION_PLAN[plan];
+    const subscriptionCost = planData.price;
+    const payAsYouGoCost = expectedMonthlyUsage * 0.15; // $0.15 per credit
+    const savings = Math.max(0, payAsYouGoCost - subscriptionCost);
+    const roi = savings > 0 ? (savings / subscriptionCost) * 100 : 0;
+
+    return {
+      subscriptionCost,
+      payAsYouGoCost,
+      savings,
+      roi
+    };
+  }
+
+  /**
+   * Get billing cycle dates
+   */
+  static getBillingCycleDates(startDate: Date): {
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    daysRemaining: number;
+  } {
+    const currentPeriodStart = new Date(startDate);
+    const currentPeriodEnd = new Date(startDate);
+    currentPeriodEnd.setMonth(currentPeriodEnd.getMonth() + 1);
+    
+    const now = new Date();
+    const daysRemaining = Math.ceil(
+      (currentPeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    return {
+      currentPeriodStart,
+      currentPeriodEnd,
+      daysRemaining: Math.max(0, daysRemaining)
+    };
+  }
+}
+
+// Utility functions for pricing display
+export const formatPrice = (amount: number, currency: string = 'USD'): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency
+  }).format(amount);
+};
+
+export const formatCredits = (credits: number): string => {
+  if (credits >= 1000) {
+    return `${(credits / 1000).toFixed(1)}k`;
+  }
+  return credits.toString();
+};
+
+export const getCreditValue = (credits: number): string => {
+  const value = credits * 0.15; // $0.15 per credit base value
+  return formatPrice(value);
+};

@@ -1,0 +1,31 @@
+{
+  "name": "videoshiksha",
+  "version": "1.0.0",
+  "description": "Production-grade video processing platform for educational content",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
+    "db:generate": "turbo run db:generate",
+    "db:push": "turbo run db:push",
+    "db:migrate": "turbo run db:migrate",
+    "worker:dev": "turbo run dev --filter=worker",
+    "web:dev": "turbo run dev --filter=web"
+  },
+  "devDependencies": {
+    "turbo": "^1.10.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "packageManager": "bun@1.0.0",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -15,6 +15,14 @@ export var Plan;
     Plan["INSTITUTE"] = "INSTITUTE";
     Plan["ENTERPRISE"] = "ENTERPRISE";
 })(Plan || (Plan = {}));
+// Legacy subscription plans for backward compatibility
+export var LegacyPlan;
+(function (LegacyPlan) {
+    LegacyPlan["FREE"] = "FREE";
+    LegacyPlan["BASIC"] = "BASIC";
+    LegacyPlan["PRO"] = "PRO";
+    LegacyPlan["ENTERPRISE"] = "ENTERPRISE";
+})(LegacyPlan || (LegacyPlan = {}));
 export var FileType;
 (function (FileType) {
     FileType["PPT"] = "PPT";

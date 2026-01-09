@@ -1,5 +1,5 @@
 import Redis from 'ioredis'
-import { Queue, Worker } from 'bullmq'
+import { Queue, Worker, BackoffOptions } from 'bullmq'
 
 // Redis connection
 const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379')
@@ -33,6 +33,12 @@ export const JobPriority = {
   URGENT: 20,
 }
 
+// Default backoff options
+const DEFAULT_BACKOFF: BackoffOptions = {
+  type: 'exponential',
+  delay: 1000,
+}
+
 // Queue service class
 export class QueueService {
   // Add job to queue
@@ -44,7 +50,7 @@ export class QueueService {
       delay?: number
       priority?: number
       attempts?: number
-      backoff?: string
+      backoff?: BackoffOptions
     } = {}
   ) {
     const queue = this.getQueue(queueName)
@@ -56,7 +62,7 @@ export class QueueService {
         delay: options.delay,
         priority: options.priority || JobPriority.NORMAL,
         attempts: options.attempts || 3,
-        backoff: options.backoff || 'exponential',
+        backoff: options.backoff || DEFAULT_BACKOFF,
       }
     )
   }

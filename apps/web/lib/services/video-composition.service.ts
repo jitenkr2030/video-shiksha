@@ -94,7 +94,7 @@ export class VideoCompositionService {
       }
       
       // Combine scenes with transitions
-      const finalVideo = await this.combineScenes(sceneVideos, options, tempDir);
+      let finalVideo = await this.combineScenes(sceneVideos, options, tempDir);
       
       // Add background music if specified
       if (options.backgroundMusic) {
@@ -112,7 +112,7 @@ export class VideoCompositionService {
       
       // Upload final video
       const videoBuffer = await fs.readFile(finalVideo);
-      const videoUrl = await storage.uploadFile(
+      const videoUrl = await storage.uploadBuffer(
         videoBuffer,
         `videos/${renderId}.mp4`,
         'video/mp4'
@@ -286,7 +286,7 @@ export class VideoCompositionService {
   }
 
   private getWatermarkPosition(position: string): string {
-    const positions = {
+    const positions: Record<string, string> = {
       'top-left': '10:10',
       'top-right': 'main_w-overlay_w-10:10',
       'bottom-left': '10:main_h-overlay_h-10',
@@ -372,7 +372,7 @@ export class VideoCompositionService {
       await execAsync(`ffmpeg -y -i "${previewVideo}" -t ${previewDuration} -c copy "${trimmedPreview}"`);
       
       const previewBuffer = await fs.readFile(trimmedPreview);
-      const previewUrl = await storage.uploadFile(
+      const previewUrl = await storage.uploadBuffer(
         previewBuffer,
         `previews/${uuidv4()}.mp4`,
         'video/mp4'

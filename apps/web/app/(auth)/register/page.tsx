@@ -121,7 +121,7 @@ export default function RegisterPage() {
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              <Icons icon="spinner" className="mr-2 h-4 w-4 animate-spin" />
             )}
             Create Account
           </Button>

@@ -52,35 +52,46 @@ export declare const JOB_TIMEOUTS: {
 };
 export declare const CREDIT_COSTS: {
     readonly PPT_PARSE: 0;
+    readonly PDF_PARSE: 1;
+    readonly DOCX_PARSE: 1;
     readonly SCRIPT_GENERATE: 1;
+    readonly SCRIPT_TRANSLATE: 2;
     readonly TTS_GENERATE: 2;
     readonly VIDEO_RENDER: 5;
     readonly SUBTITLE_GENERATE: 1;
+    readonly THUMBNAIL_GENERATE: 1;
+    readonly ANALYTICS_UPDATE: 0;
 };
 export declare const SUBSCRIPTION_PLANS: {
-    readonly [SubscriptionPlan.FREE]: {
+    readonly FREE: {
         readonly name: "Free";
         readonly price: 0;
         readonly credits: 10;
         readonly features: readonly ["Up to 3 projects", "Basic video quality (720p)", "Standard voices", "No watermark"];
     };
-    readonly [SubscriptionPlan.BASIC]: {
-        readonly name: "Basic";
+    readonly STARTER: {
+        readonly name: "Starter";
         readonly price: 9.99;
         readonly credits: 100;
         readonly features: readonly ["Unlimited projects", "HD video quality (1080p)", "Premium voices", "No watermark", "Priority support"];
     };
-    readonly [SubscriptionPlan.PRO]: {
-        readonly name: "Pro";
+    readonly CREATOR: {
+        readonly name: "Creator";
         readonly price: 29.99;
         readonly credits: 500;
-        readonly features: readonly ["Everything in Basic", "4K video quality", "Custom voice cloning", "Batch processing", "API access", "Priority support"];
+        readonly features: readonly ["Everything in Starter", "4K video quality", "Custom voice cloning", "Batch processing", "API access", "Priority support"];
     };
-    readonly [SubscriptionPlan.ENTERPRISE]: {
+    readonly INSTITUTE: {
+        readonly name: "Institute";
+        readonly price: 49.99;
+        readonly credits: 1000;
+        readonly features: readonly ["Everything in Creator", "Multi-user support", "Team management", "Custom branding", "Analytics dashboard"];
+    };
+    readonly ENTERPRISE: {
         readonly name: "Enterprise";
         readonly price: 99.99;
         readonly credits: 2000;
-        readonly features: readonly ["Everything in Pro", "Unlimited credits", "White-label options", "Custom integrations", "Dedicated support", "SLA guarantee"];
+        readonly features: readonly ["Everything in Institute", "Unlimited credits", "White-label options", "Custom integrations", "Dedicated support", "SLA guarantee"];
     };
 };
 export declare const DEFAULT_VOICE_SETTINGS: VoiceSettings;
@@ -100,5 +111,5 @@ export declare const STORAGE_CONFIG: {
     };
     readonly regions: readonly ["us-east-1", "eu-west-1", "ap-south-1"];
 };
-import { SubscriptionPlan, VoiceSettings, VideoSettings, SubtitleSettings } from '../types';
+import { VoiceSettings, VideoSettings, SubtitleSettings } from '../types';
 //# sourceMappingURL=index.d.ts.map

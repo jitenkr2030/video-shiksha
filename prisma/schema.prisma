@@ -10,6 +10,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Note: SQLite doesn't support Json, arrays, or enums natively.
+// Using String types and storing JSON as stringified content.
+
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -45,13 +48,13 @@ model User {
   phone         String?
   phoneVerified DateTime?
   image         String?
-  role          UserRole  @default(STUDENT)
-  plan          Plan      @default(FREE)
+  role          String    @default("STUDENT")
+  plan          String    @default("FREE")
   credits       Int       @default(10)
   storageUsed   BigInt    @default(0)
   language      String    @default("en")
   timezone      String    @default("UTC")
-  preferences   Json?     // UserPreferences
+  preferences   String?    // JSON string of UserPreferences
   instituteId   String?   // For institute users
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -63,6 +66,8 @@ model User {
   courses       Course[]
   analytics     UserAnalytics[]
   subscriptions  Subscription[]
+  enrollments   Enrollment[]
+  institute      Institute?  @relation(fields: [instituteId], references: [id])
   
   @@map("users")
 }
@@ -75,7 +80,7 @@ model Institute {
   address     String?
   phone       String?
   email       String
-  settings    Json?    // InstituteSettings
+  settings    String?    // JSON string of InstituteSettings
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -95,12 +100,12 @@ model Course {
   thumbnail   String?
   price       Float?      @default(0)
   currency    String      @default("USD")
-  tags        String[]
+  tags        String?    // Comma-separated tags as JSON string
   category    String?
-  level       CourseLevel @default(BEGINNER)
+  level       String     @default("BEGINNER")
   language    String      @default("en")
-  status      CourseStatus @default(DRAFT)
-  settings    Json?       // CourseSettings
+  status      String      @default("DRAFT")
+  settings    String?       // JSON string of CourseSettings
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -135,14 +140,14 @@ model Project {
   description     String?
   originalFileUrl String?         // Original uploaded file
   originalFileName String?
-  fileType        FileType        @default(PPTX)
+  fileType        String           @default("PPTX")
   fileSize        BigInt?
   language        String          @default("en")
-  status          ProjectStatus   @default(DRAFT)
-  settings        Json            // ProjectSettings
-  branding        Json?           // BrandingSettings
+  status          String           @default("DRAFT")
+  settings        String?          // JSON string of ProjectSettings
+  branding        String?          // JSON string of BrandingSettings
   watermark       Boolean         @default(true)
-  accessType      AccessType      @default(PRIVATE)
+  accessType      String           @default("PRIVATE")
   shareToken      String?         @unique // For public sharing
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -169,7 +174,7 @@ model Slide {
   duration      Int        @default(5) // seconds
   transition    String?    // Transition type
   background    String?    // Background color/image
-  layout        SlideLayout @default(TITLE)
+  layout        String      @default("TITLE")
   language      String     @default("en")
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
@@ -187,9 +192,9 @@ model Script {
   slideId         String
   content         String
   originalContent String?        // Original slide content
-  tone            ScriptTone     @default(TEACHER)
-  level           ContentLevel   @default(BEGINNER)
-  voiceSettings   Json           // VoiceSettings
+  tone            String         @default("TEACHER")
+  level           String          @default("BEGINNER")
+  voiceSettings   String         // JSON string of VoiceSettings
   generatedAt     DateTime       @default(now())
   isCustom        Boolean        @default(false)
   language        String         @default("en")
@@ -206,12 +211,12 @@ model Video {
   url             String
   thumbnailUrl    String?
   duration        Int              // seconds
-  resolution      VideoResolution  @default(FULL_HD_1080)
-  format          VideoFormat      @default(MP4)
-  aspectRatio     AspectRatio      @default(SIXTEEN_NINE)
-  quality         VideoQuality     @default(MEDIUM)
-  status          VideoStatus      @default(PENDING)
-  metadata        Json?            // VideoMetadata
+  resolution      String           @default("FULL_HD_1080")
+  format          String           @default("MP4")
+  aspectRatio     String            @default("SIXTEEN_NINE")
+  quality         String            @default("MEDIUM")
+  status          String           @default("PENDING")
+  metadata        String?           // JSON string of VideoMetadata
   subtitlesUrl    String?
   watermark       Boolean          @default(true)
   downloadCount   Int              @default(0)
@@ -231,7 +236,7 @@ model Subtitle {
   content     String
   startTime   Float    // seconds
   endTime     Float    // seconds
-  format      SubtitleFormat @default(SRT)
+  format      String @default("SRT")
   isBurnedIn  Boolean  @default(false)
   createdAt   DateTime @default(now())
 
@@ -243,10 +248,10 @@ model Subtitle {
 model Job {
   id          String    @id @default(cuid())
   projectId   String
-  type        JobType
-  status      JobStatus @default(PENDING)
+  type        String
+  status      String    @default("PENDING")
   progress    Int       @default(0)
-  result      Json?     // JobResult
+  result      String?    // JSON string of JobResult
   error       String?
   priority    Int       @default(5) // 1-10 priority
   startedAt   DateTime?
@@ -265,13 +270,13 @@ model Payment {
   subscriptionId       String?
   amount               Float
   currency             String         @default("USD")
-  status               PaymentStatus  @default(PENDING)
-  method               PaymentMethod  @default(STRIPE)
+  status               String         @default("PENDING")
+  method               String         @default("STRIPE")
   stripePaymentIntentId String?
   invoiceId            String?
   credits              Int
   description          String?
-  metadata             Json?          // PaymentMetadata
+  metadata             String?         // JSON string of PaymentMetadata
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
 
@@ -284,8 +289,8 @@ model Payment {
 model Subscription {
   id          String           @id @default(cuid())
   userId      String
-  plan        Plan
-  status      SubscriptionStatus @default(ACTIVE)
+  plan        String
+  status      String               @default("ACTIVE")
   startDate   DateTime         @default(now())
   endDate     DateTime
   credits     Int              @default(0)
@@ -309,7 +314,7 @@ model UserAnalytics {
   storageUsed   BigInt   @default(0)
   renderTime    Int      @default(0) // minutes
   language      String?  // Primary language used
-  metadata      Json?    // Additional analytics data
+  metadata      String?    // JSON string of analytics data
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -326,7 +331,7 @@ model ProjectAnalytics {
   shares       Int      @default(0)
   renderTime   Int      @default(0) // seconds
   successRate  Float    @default(0)
-  metadata     Json?    // Additional analytics data
+  metadata     String?    // JSON string of analytics data
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -337,7 +342,7 @@ model ProjectAnalytics {
 model SystemConfig {
   id    String @id @default(cuid())
   key   String @unique
-  value Json
+  value String    // JSON string of config value
   updatedAt DateTime @updatedAt
 
   @@map("system_config")
@@ -348,7 +353,7 @@ model ApiKey {
   userId    String
   name      String
   key       String   @unique
-  scopes    String[]
+  scopes    String?    // JSON string array of scopes
   lastUsed  DateTime?
   expiresAt DateTime?
   isActive  Boolean  @default(true)
@@ -362,7 +367,7 @@ model FeatureFlag {
   key       String  @unique
   enabled   Boolean @default(false)
   rollout   Float?  @default(0) // 0-1 rollout percentage
-  metadata  Json?
+  metadata  String?    // JSON string of feature flag metadata
   updatedAt DateTime @updatedAt
 
   @@map("feature_flags")
@@ -376,162 +381,26 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// Enums
-enum UserRole {
-  STUDENT
-  TEACHER
-  INSTITUTE_ADMIN
-  ADMIN
-}
-
-enum Plan {
-  FREE
-  STARTER    // ₹99
-  CREATOR    // ₹299
-  INSTITUTE
-  ENTERPRISE
-}
-
-enum FileType {
-  PPT
-  PPTX
-  PDF
-  DOCX
-  TXT
-  GOOGLE_SLIDES
-}
-
-enum ProjectStatus {
-  DRAFT
-  PROCESSING
-  COMPLETED
-  FAILED
-  ARCHIVED
-}
-
-enum AccessType {
-  PRIVATE
-  PUBLIC
-  UNLISTED
-}
-
-enum SlideLayout {
-  TITLE
-  CONTENT
-  TWO_COLUMN
-  IMAGE_LEFT
-  IMAGE_RIGHT
-  SECTION_HEADER
-}
-
-enum ScriptTone {
-  TEACHER
-  CONVERSATIONAL
-  CORPORATE
-  EXAM_ORIENTED
-  CASUAL
-}
-
-enum ContentLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
-
-enum CourseLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-  ALL_LEVELS
-}
-
-enum CourseStatus {
-  DRAFT
-  PUBLISHED
-  ARCHIVED
-  DELETED
-}
-
-enum VideoStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  ARCHIVED
-}
-
-enum JobType {
-  PPT_PARSE
-  PDF_PARSE
-  DOCX_PARSE
-  SCRIPT_GENERATE
-  SCRIPT_TRANSLATE
-  TTS_GENERATE
-  VIDEO_RENDER
-  SUBTITLE_GENERATE
-  THUMBNAIL_GENERATE
-  ANALYTICS_UPDATE
-}
-
-enum JobStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  REFUNDED
-  CANCELLED
-}
-
-enum PaymentMethod {
-  STRIPE
-  RAZORPAY
-  PAYPAL
-  BANK_TRANSFER
-}
-
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  SUSPENDED
-}
-
-enum VideoResolution {
-  HD_720
-  FULL_HD_1080
-  UHD_4K
-}
-
-enum VideoFormat {
-  MP4
-  WEBM
-  MOV
-  AVI
-}
-
-enum AspectRatio {
-  SIXTEEN_NINE    // 16:9
-  NINE_SIXTEEN    // 9:16
-  ONE_ONE        // 1:1
-  FOUR_THREE     // 4:3
-}
-
-enum VideoQuality {
-  LOW
-  MEDIUM
-  HIGH
-  PREMIUM
-}
-
-enum SubtitleFormat {
-  SRT
-  VTT
-  ASS
-}
+// Note: Enum values are stored as String types in SQLite
+// Valid values:
+// - UserRole: STUDENT, TEACHER, INSTITUTE_ADMIN, ADMIN
+// - Plan: FREE, STARTER, CREATOR, INSTITUTE, ENTERPRISE
+// - FileType: PPT, PPTX, PDF, DOCX, TXT, GOOGLE_SLIDES
+// - ProjectStatus: DRAFT, PROCESSING, COMPLETED, FAILED, ARCHIVED
+// - AccessType: PRIVATE, PUBLIC, UNLISTED
+// - SlideLayout: TITLE, CONTENT, TWO_COLUMN, IMAGE_LEFT, IMAGE_RIGHT, SECTION_HEADER
+// - ScriptTone: TEACHER, CONVERSATIONAL, CORPORATE, EXAM_ORIENTED, CASUAL
+// - ContentLevel: BEGINNER, INTERMEDIATE, ADVANCED
+// - CourseLevel: BEGINNER, INTERMEDIATE, ADVANCED, ALL_LEVELS
+// - CourseStatus: DRAFT, PUBLISHED, ARCHIVED, DELETED
+// - VideoStatus: PENDING, PROCESSING, COMPLETED, FAILED, ARCHIVED
+// - JobType: PPT_PARSE, PDF_PARSE, DOCX_PARSE, SCRIPT_GENERATE, SCRIPT_TRANSLATE, TTS_GENERATE, VIDEO_RENDER, SUBTITLE_GENERATE, THUMBNAIL_GENERATE, ANALYTICS_UPDATE
+// - JobStatus: PENDING, RUNNING, COMPLETED, FAILED, CANCELLED
+// - PaymentStatus: PENDING, COMPLETED, FAILED, REFUNDED, CANCELLED
+// - PaymentMethod: STRIPE, RAZORPAY, PAYPAL, BANK_TRANSFER
+// - SubscriptionStatus: ACTIVE, CANCELLED, EXPIRED, SUSPENDED
+// - VideoResolution: HD_720, FULL_HD_1080, UHD_4K
+// - VideoFormat: MP4, WEBM, MOV, AVI
+// - AspectRatio: SIXTEEN_NINE, NINE_SIXTEEN, ONE_ONE, FOUR_THREE
+// - VideoQuality: LOW, MEDIUM, HIGH, PREMIUM
+// - SubtitleFormat: SRT, VTT, ASS

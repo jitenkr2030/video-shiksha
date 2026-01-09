@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { 
-  SubscriptionPlan, 
+  Plan, 
   VideoResolution, 
   VideoFormat,
   JobType,

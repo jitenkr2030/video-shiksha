@@ -619,6 +619,14 @@ export enum Plan {
   ENTERPRISE = 'ENTERPRISE'
 }
 
+// Legacy subscription plans for backward compatibility
+export enum LegacyPlan {
+  FREE = 'FREE',
+  BASIC = 'BASIC',
+  PRO = 'PRO',
+  ENTERPRISE = 'ENTERPRISE'
+}
+
 export enum FileType {
   PPT = 'PPT',
   PPTX = 'PPTX',

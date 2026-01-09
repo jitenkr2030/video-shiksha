@@ -552,6 +552,12 @@ export declare enum Plan {
     INSTITUTE = "INSTITUTE",
     ENTERPRISE = "ENTERPRISE"
 }
+export declare enum LegacyPlan {
+    FREE = "FREE",
+    BASIC = "BASIC",
+    PRO = "PRO",
+    ENTERPRISE = "ENTERPRISE"
+}
 export declare enum FileType {
     PPT = "PPT",
     PPTX = "PPTX",

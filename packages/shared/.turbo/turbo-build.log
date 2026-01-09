@@ -1,15 +1,1 @@
-$ tsc
-constants/index.ts(138,3): error TS2820: Type '"medium"' is not assignable to type 'VideoQuality'. Did you mean 'VideoQuality.MEDIUM'?
-constants/index.ts(144,3): error TS2561: Object literal may only specify known properties, but 'language' does not exist in type 'SubtitleSettings'. Did you mean to write 'languages'?
-constants/index.ts(169,3): error TS2724: '"../types"' has no exported member named 'SubscriptionPlan'. Did you mean 'Subscription'?
-pricing/index.ts(1,10): error TS2724: '"../types"' has no exported member named 'SubscriptionPlan'. Did you mean 'Subscription'?
-pricing/index.ts(64,11): error TS2739: Type '{ PPT_PARSE: 0; SCRIPT_GENERATE: number; TTS_GENERATE: number; VIDEO_RENDER: 5; SUBTITLE_GENERATE: number; }' is missing the following properties from type 'Record<JobType, number>': PDF_PARSE, DOCX_PARSE, SCRIPT_TRANSLATE, THUMBNAIL_GENERATE, ANALYTICS_UPDATE
-pricing/index.ts(95,12): error TS2552: Cannot find name 'SUBSCRIPTION_PLAN'. Did you mean 'SUBSCRIPTION_PLANS'?
-pricing/index.ts(128,29): error TS7053: Element implicitly has an 'any' type because expression of type 'JobType' can't be used to index type '{ readonly PPT_PARSE: 0; readonly SCRIPT_GENERATE: 1; readonly TTS_GENERATE: 2; readonly VIDEO_RENDER: 5; readonly SUBTITLE_GENERATE: 1; }'.
-  Property '[JobType.PDF_PARSE]' does not exist on type '{ readonly PPT_PARSE: 0; readonly SCRIPT_GENERATE: 1; readonly TTS_GENERATE: 2; readonly VIDEO_RENDER: 5; readonly SUBTITLE_GENERATE: 1; }'.
-pricing/index.ts(140,29): error TS7053: Element implicitly has an 'any' type because expression of type 'JobType' can't be used to index type '{ readonly PPT_PARSE: 0; readonly SCRIPT_GENERATE: 1; readonly TTS_GENERATE: 2; readonly VIDEO_RENDER: 5; readonly SUBTITLE_GENERATE: 1; }'.
-  Property '[JobType.PDF_PARSE]' does not exist on type '{ readonly PPT_PARSE: 0; readonly SCRIPT_GENERATE: 1; readonly TTS_GENERATE: 2; readonly VIDEO_RENDER: 5; readonly SUBTITLE_GENERATE: 1; }'.
-pricing/index.ts(155,29): error TS2552: Cannot find name 'SUBSCRIPTION_PLAN'. Did you mean 'SUBSCRIPTION_PLANS'?
-pricing/index.ts(167,24): error TS2552: Cannot find name 'SUBSCRIPTION_PLAN'. Did you mean 'SUBSCRIPTION_PLANS'?
-pricing/index.ts(202,22): error TS2552: Cannot find name 'SUBSCRIPTION_PLAN'. Did you mean 'SUBSCRIPTION_PLANS'?
-validators/index.ts(3,3): error TS2724: '"../types"' has no exported member named 'SubscriptionPlan'. Did you mean 'Subscription'?
+[0m[2m[35m$[0m [2m[1mtsc[0m

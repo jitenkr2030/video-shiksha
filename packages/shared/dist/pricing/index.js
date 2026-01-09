@@ -1,5 +1,5 @@
-import { SubscriptionPlan, JobType } from '../types';
-import { CREDIT_COSTS } from '../constants';
+import { Plan, JobType } from '../types';
+import { SUBSCRIPTION_PLANS, CREDIT_COSTS } from '../constants';
 export const CREDIT_PACKAGES = [
     {
         id: 'starter',
@@ -41,10 +41,15 @@ export class PricingCalculator {
     static calculateProjectCredits(slideCount, hasCustomScript = false, hasSubtitles = true) {
         const breakdown = {
             [JobType.PPT_PARSE]: CREDIT_COSTS[JobType.PPT_PARSE],
+            [JobType.PDF_PARSE]: CREDIT_COSTS[JobType.PDF_PARSE],
+            [JobType.DOCX_PARSE]: CREDIT_COSTS[JobType.DOCX_PARSE],
             [JobType.SCRIPT_GENERATE]: hasCustomScript ? 0 : slideCount * CREDIT_COSTS[JobType.SCRIPT_GENERATE],
+            [JobType.SCRIPT_TRANSLATE]: CREDIT_COSTS[JobType.SCRIPT_TRANSLATE],
             [JobType.TTS_GENERATE]: slideCount * CREDIT_COSTS[JobType.TTS_GENERATE],
             [JobType.VIDEO_RENDER]: CREDIT_COSTS[JobType.VIDEO_RENDER],
-            [JobType.SUBTITLE_GENERATE]: hasSubtitles ? CREDIT_COSTS[JobType.SUBTITLE_GENERATE] : 0
+            [JobType.SUBTITLE_GENERATE]: hasSubtitles ? CREDIT_COSTS[JobType.SUBTITLE_GENERATE] : 0,
+            [JobType.THUMBNAIL_GENERATE]: CREDIT_COSTS[JobType.THUMBNAIL_GENERATE],
+            [JobType.ANALYTICS_UPDATE]: CREDIT_COSTS[JobType.ANALYTICS_UPDATE]
         };
         const totalCredits = Object.values(breakdown).reduce((sum, credits) => sum + credits, 0);
         // Estimate processing time (rough calculation)
@@ -63,7 +68,7 @@ export class PricingCalculator {
      * Get monthly credits for a subscription plan
      */
     static getPlanCredits(plan) {
-        return SUBSCRIPTION_PLAN[plan].credits;
+        return SUBSCRIPTION_PLANS[plan].credits;
     }
     /**
      * Calculate price per credit for packages
@@ -103,16 +108,16 @@ export class PricingCalculator {
      * Get upgrade recommendation based on usage
      */
     static getUpgradeRecommendation(currentPlan, monthlyUsage) {
-        const currentPlanData = SUBSCRIPTION_PLAN[currentPlan];
+        const currentPlanData = SUBSCRIPTION_PLANS[currentPlan];
         if (monthlyUsage <= currentPlanData.credits * 0.8) {
             return null; // No upgrade needed
         }
         // Find next plan that can handle usage
-        const plans = Object.values(SubscriptionPlan);
+        const plans = Object.values(Plan);
         const currentIndex = plans.indexOf(currentPlan);
         for (let i = currentIndex + 1; i < plans.length; i++) {
             const plan = plans[i];
-            const planData = SUBSCRIPTION_PLAN[plan];
+            const planData = SUBSCRIPTION_PLANS[plan];
             if (planData.credits >= monthlyUsage) {
                 const currentCost = currentPlanData.price;
                 const newCost = planData.price;
@@ -127,7 +132,7 @@ export class PricingCalculator {
             }
         }
         return {
-            recommendedPlan: SubscriptionPlan.ENTERPRISE,
+            recommendedPlan: Plan.ENTERPRISE,
             reason: 'Your usage exceeds all standard plans. Contact us for enterprise pricing.'
         };
     }
@@ -135,7 +140,7 @@ export class PricingCalculator {
      * Calculate ROI for subscription vs pay-as-you-go
      */
     static calculateSubscriptionROI(plan, expectedMonthlyUsage) {
-        const planData = SUBSCRIPTION_PLAN[plan];
+        const planData = SUBSCRIPTION_PLANS[plan];
         const subscriptionCost = planData.price;
         const payAsYouGoCost = expectedMonthlyUsage * 0.15; // $0.15 per credit
         const savings = Math.max(0, payAsYouGoCost - subscriptionCost);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { LoginSchema } from '@/validators'
+import { loginSchema } from '@/validators'
 import { db } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { email, password } = LoginSchema.parse(body)
+    const { email, password } = loginSchema.parse(body)
 
     // Find user
     const user = await db.user.findUnique({
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid input', details: error.errors },
+        { error: 'Invalid input', details: error.flatten().fieldErrors },
         { status: 400 }
       )
     }

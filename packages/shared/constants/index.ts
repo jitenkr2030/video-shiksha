@@ -66,14 +66,19 @@ export const JOB_TIMEOUTS = {
 
 export const CREDIT_COSTS = {
   [JobType.PPT_PARSE]: 0,
+  [JobType.PDF_PARSE]: 1,
+  [JobType.DOCX_PARSE]: 1,
   [JobType.SCRIPT_GENERATE]: 1,
+  [JobType.SCRIPT_TRANSLATE]: 2,
   [JobType.TTS_GENERATE]: 2,
   [JobType.VIDEO_RENDER]: 5,
-  [JobType.SUBTITLE_GENERATE]: 1
+  [JobType.SUBTITLE_GENERATE]: 1,
+  [JobType.THUMBNAIL_GENERATE]: 1,
+  [JobType.ANALYTICS_UPDATE]: 0
 } as const;
 
 export const SUBSCRIPTION_PLANS = {
-  [SubscriptionPlan.FREE]: {
+  [Plan.FREE]: {
     name: 'Free',
     price: 0,
     credits: 10,
@@ -84,8 +89,8 @@ export const SUBSCRIPTION_PLANS = {
       'No watermark'
     ]
   },
-  [SubscriptionPlan.BASIC]: {
-    name: 'Basic',
+  [Plan.STARTER]: {
+    name: 'Starter',
     price: 9.99,
     credits: 100,
     features: [
@@ -96,12 +101,12 @@ export const SUBSCRIPTION_PLANS = {
       'Priority support'
     ]
   },
-  [SubscriptionPlan.PRO]: {
-    name: 'Pro',
+  [Plan.CREATOR]: {
+    name: 'Creator',
     price: 29.99,
     credits: 500,
     features: [
-      'Everything in Basic',
+      'Everything in Starter',
       '4K video quality',
       'Custom voice cloning',
       'Batch processing',
@@ -109,12 +114,24 @@ export const SUBSCRIPTION_PLANS = {
       'Priority support'
     ]
   },
-  [SubscriptionPlan.ENTERPRISE]: {
+  [Plan.INSTITUTE]: {
+    name: 'Institute',
+    price: 49.99,
+    credits: 1000,
+    features: [
+      'Everything in Creator',
+      'Multi-user support',
+      'Team management',
+      'Custom branding',
+      'Analytics dashboard'
+    ]
+  },
+  [Plan.ENTERPRISE]: {
     name: 'Enterprise',
     price: 99.99,
     credits: 2000,
     features: [
-      'Everything in Pro',
+      'Everything in Institute',
       'Unlimited credits',
       'White-label options',
       'Custom integrations',
@@ -135,16 +152,27 @@ export const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
 export const DEFAULT_VIDEO_SETTINGS: VideoSettings = {
   resolution: VideoResolution.FULL_HD_1080,
   format: VideoFormat.MP4,
-  quality: 'medium',
-  transitionDuration: 1.0
+  aspectRatio: AspectRatio.SIXTEEN_NINE,
+  quality: VideoQuality.MEDIUM,
+  transitionDuration: 1.0,
+  effects: {
+    kenBurns: false,
+    zoomPan: false,
+    highlights: false,
+    animations: true,
+    transitions: ['fade']
+  }
 } as const;
 
 export const DEFAULT_SUBTITLE_SETTINGS: SubtitleSettings = {
   enabled: true,
-  language: 'en',
+  languages: ['en'],
   position: 'bottom',
   fontSize: 16,
-  color: '#FFFFFF'
+  color: '#FFFFFF',
+  fontFamily: 'Arial',
+  outline: false,
+  karaokeMode: false
 } as const;
 
 export const WORKER_CONFIG = {
@@ -166,9 +194,11 @@ export const STORAGE_CONFIG = {
 // Import enums from types
 import { 
   JobType, 
-  SubscriptionPlan, 
+  Plan, 
   VideoResolution, 
   VideoFormat,
+  VideoQuality,
+  AspectRatio,
   VoiceSettings,
   VideoSettings,
   SubtitleSettings

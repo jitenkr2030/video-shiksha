@@ -473,7 +473,7 @@ export function LandingPage() {
                     ))}
                   </div>
                   
-                  <p className="text-slate-700 italic">"{testimonial.content}"</p>
+                  <p className="text-slate-700 italic">&ldquo;{testimonial.content}&rdquo;</p>
                 </CardContent>
               </Card>
             ))}

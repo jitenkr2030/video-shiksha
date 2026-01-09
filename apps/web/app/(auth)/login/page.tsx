@@ -88,13 +88,13 @@ export default function LoginPage() {
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && (
-              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+              <Icons icon="spinner" className="mr-2 h-4 w-4 animate-spin" />
             )}
             Sign in
           </Button>
         </form>
         <div className="mt-4 text-center text-sm">
-          Don't have an account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/(auth)/register" className="text-primary hover:underline">
             Sign up
           </Link>

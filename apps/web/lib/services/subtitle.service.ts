@@ -115,7 +115,7 @@ export class SubtitleService {
     const fileContent = this.generateSubtitleFile(entries, options.format, options.style);
     
     // Upload to storage
-    const fileUrl = await storage.uploadFile(
+    const fileUrl = await storage.uploadBuffer(
       Buffer.from(fileContent, 'utf-8'),
       `subtitles/${subtitleId}.${options.format}`,
       `text/${options.format}`
@@ -337,7 +337,7 @@ export class SubtitleService {
 
   private getAlignment(position: string, alignment: string): number {
     // ASS alignment codes
-    const alignments = {
+    const alignments: Record<string, number> = {
       'bottom-center': 2,
       'bottom-left': 1,
       'bottom-right': 3,
@@ -349,7 +349,8 @@ export class SubtitleService {
       'top-right': 9
     };
     
-    return alignments[`${position}-${alignment}`] || 2;
+    const key = `${position}-${alignment}` as string;
+    return alignments[key] || 2;
   }
 
   async translateSubtitles(

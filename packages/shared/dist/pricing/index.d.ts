@@ -1,4 +1,4 @@
-import { SubscriptionPlan, JobType } from '../types';
+import { Plan, JobType } from '../types';
 export interface CreditPackage {
     id: string;
     name: string;
@@ -22,7 +22,7 @@ export declare class PricingCalculator {
     /**
      * Get monthly credits for a subscription plan
      */
-    static getPlanCredits(plan: SubscriptionPlan): number;
+    static getPlanCredits(plan: Plan): number;
     /**
      * Calculate price per credit for packages
      */
@@ -42,15 +42,15 @@ export declare class PricingCalculator {
     /**
      * Get upgrade recommendation based on usage
      */
-    static getUpgradeRecommendation(currentPlan: SubscriptionPlan, monthlyUsage: number): {
-        recommendedPlan: SubscriptionPlan;
+    static getUpgradeRecommendation(currentPlan: Plan, monthlyUsage: number): {
+        recommendedPlan: Plan;
         reason: string;
         savings?: number;
     } | null;
     /**
      * Calculate ROI for subscription vs pay-as-you-go
      */
-    static calculateSubscriptionROI(plan: SubscriptionPlan, expectedMonthlyUsage: number): {
+    static calculateSubscriptionROI(plan: Plan, expectedMonthlyUsage: number): {
         subscriptionCost: number;
         payAsYouGoCost: number;
         savings: number;

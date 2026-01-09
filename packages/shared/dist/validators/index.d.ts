@@ -34,17 +34,17 @@ export declare const CreateProjectSchema: z.ZodObject<{
             pitch: z.ZodNumber;
             language: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         }, {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         }>;
         video: z.ZodObject<{
             resolution: z.ZodNativeEnum<typeof VideoResolution>;
@@ -89,11 +89,11 @@ export declare const CreateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -110,11 +110,11 @@ export declare const CreateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -134,11 +134,11 @@ export declare const CreateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -159,11 +159,11 @@ export declare const CreateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -186,17 +186,17 @@ export declare const UpdateProjectSchema: z.ZodObject<{
             pitch: z.ZodNumber;
             language: z.ZodString;
         }, "strip", z.ZodTypeAny, {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         }, {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         }>;
         video: z.ZodObject<{
             resolution: z.ZodNativeEnum<typeof VideoResolution>;
@@ -241,11 +241,11 @@ export declare const UpdateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -262,11 +262,11 @@ export declare const UpdateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -287,11 +287,11 @@ export declare const UpdateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -312,11 +312,11 @@ export declare const UpdateProjectSchema: z.ZodObject<{
             transitionDuration: number;
         };
         voice: {
-            language: string;
             voice: string;
             provider: "openai" | "elevenlabs";
             speed: number;
             pitch: number;
+            language: string;
         };
         subtitles: {
             color: string;
@@ -456,35 +456,35 @@ export declare const GenerateTTSSchema: z.ZodObject<{
         pitch: z.ZodNumber;
         language: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        language: string;
         voice: string;
         provider: "openai" | "elevenlabs";
         speed: number;
         pitch: number;
+        language: string;
     }, {
-        language: string;
         voice: string;
         provider: "openai" | "elevenlabs";
         speed: number;
         pitch: number;
+        language: string;
     }>;
 }, "strip", z.ZodTypeAny, {
     scriptId: string;
     voiceSettings: {
-        language: string;
         voice: string;
         provider: "openai" | "elevenlabs";
         speed: number;
         pitch: number;
+        language: string;
     };
 }, {
     scriptId: string;
     voiceSettings: {
-        language: string;
         voice: string;
         provider: "openai" | "elevenlabs";
         speed: number;
         pitch: number;
+        language: string;
     };
 }>;
 export declare const ApiResponseSchema: z.ZodObject<{

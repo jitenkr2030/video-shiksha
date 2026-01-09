@@ -25,7 +25,10 @@ import {
 import { useSession } from 'next-auth/react'
 
 export function LandingPage() {
-  const { data: session } = useSession()
+  // Use a safe session check that doesn't crash if auth fails
+  const { data: session, status } = useSession()
+  const isLoading = status === 'loading'
+  const isAuthenticated = status === 'authenticated' && session
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
 
@@ -184,7 +187,7 @@ export function LandingPage() {
               <Link href="#testimonials" className="text-slate-600 hover:text-slate-900 transition">
                 Testimonials
               </Link>
-              {session ? (
+              {isAuthenticated ? (
                 <Link href="/dashboard">
                   <Button>Dashboard</Button>
                 </Link>
@@ -221,7 +224,7 @@ export function LandingPage() {
               <Link href="#testimonials" className="block text-slate-600 hover:text-slate-900">
                 Testimonials
               </Link>
-              {session ? (
+              {isAuthenticated ? (
                 <Link href="/dashboard">
                   <Button className="w-full">Dashboard</Button>
                 </Link>
@@ -261,7 +264,7 @@ export function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            {session ? (
+            {isAuthenticated ? (
               <Link href="/dashboard">
                 <Button size="lg" className="gap-2 text-lg px-8 py-3">
                   <Upload className="w-5 h-5" />
@@ -430,7 +433,7 @@ export function LandingPage() {
                     </div>
                   ))}
                   
-                  <Link href={session ? "/dashboard/billing" : "/(auth)/register"} className="block mt-6">
+                  <Link href={isAuthenticated ? "/dashboard/billing" : "/(auth)/register"} className="block mt-6">
                     <Button className={`w-full ${plan.popular ? 'bg-primary' : ''}`} variant={plan.popular ? 'default' : 'outline'}>
                       {plan.cta}
                     </Button>
@@ -495,7 +498,7 @@ export function LandingPage() {
                 to create amazing video content in minutes.
               </p>
               
-              {session ? (
+              {isAuthenticated ? (
                 <Link href="/dashboard">
                   <Button size="lg" variant="secondary" className="gap-2 text-lg px-8 py-3">
                     <Upload className="w-5 h-5" />

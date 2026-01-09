@@ -1,49 +1,43 @@
 import { NextAuthOptions } from "next-auth"
-import CredentialsProvider from "next-auth/providers/credentials"
-import { db } from "@/lib/db"
+
+// Mock user for demo purposes - no database required
+const mockUser = {
+  id: "demo-user-1",
+  email: "demo@videoshiksha.com",
+  name: "Demo User",
+  image: null,
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
+    {
+      id: "credentials",
+      name: "Demo Account",
+      type: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        email: { label: "Email", type: "email", placeholder: "demo@videoshiksha.com" },
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null
-        }
-
-        try {
-          const user = await db.user.findUnique({
-            where: { email: credentials.email }
-          })
-
-          if (!user) {
-            return null
-          }
-
-          // Return user object in NextAuth format
+        // Demo login - accept any credentials for landing page demo
+        if (credentials?.email && credentials?.password) {
           return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            image: user.image,
+            id: mockUser.id,
+            email: credentials.email,
+            name: mockUser.name,
+            image: mockUser.image,
           }
-        } catch (error) {
-          console.error("Auth error:", error)
-          return null
         }
+        return null
       }
-    })
+    }
   ],
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 30 * 24 * 60 * 60, // 30 days for demo
   },
   jwt: {
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/(auth)/login",
@@ -63,5 +57,5 @@ export const authOptions: NextAuthOptions = {
       return session
     }
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "demo-secret-for-landing-page-only",
 }
